@@ -14,21 +14,33 @@ import java.util.regex.Pattern;
 public class LogTurnAroundCheck{
     String prevLine, currentLine;
     File file;
+    String fileName;
     LineIterator lineIterator;
-    Logger logger= Logger.getLogger("LogTurnAroundCheck");
     int prev;
+    int cntLog, cntOverturnLog;
+
+    Logger logger= Logger.getLogger("LogTurnAroundCheck");
 
 
     public LogTurnAroundCheck() {
         this.prevLine = "";
+        this.prev= 0;
+        this.cntLog= 0;
+        this.cntOverturnLog= 0;
+        this.fileName= "LOG.txt";
+
+        //todo 생성자에서 딴거 분리
+        //todo 임의 파일명인수로 넣어도 실행되게. default param도 있고
+        fileSet();
+    }
+
+    public void fileSet(){
         try{
             String userDir= System.getProperty("user.dir");
-            this.file= new File(userDir + "\\src\\main\\java\\logcheck\\LOG_0001.txt"); //todo into file
-            this.prev= 0;
+            this.file= new File(userDir + "\\src\\main\\java\\logcheck\\"+ fileName); //todo into file
         }catch (Exception pe){
             pe.printStackTrace();
         }
-
     }
 
     public void lineByRead() {
@@ -40,6 +52,7 @@ public class LogTurnAroundCheck{
                 //logger.info("뭘 읽고있니 "+ currentLine);
                 turnAroundCheck();
             }
+            logger.info("totLog: "+ cntLog+ "\toverturnLog: "+ cntOverturnLog);
         } catch (IOException e) {
             e.printStackTrace();
         } finally{
@@ -52,21 +65,22 @@ public class LogTurnAroundCheck{
      * @return (true: turn around, false: normal)
      */
     public boolean turnAroundCheck(){
-        //todo modify regex pattern
+        //todo modify regex pattern - real Log
         Pattern p= Pattern.compile("(\\d{6})\\s(\\d{3})\\s");
         Matcher mCurrent= p.matcher(currentLine);
         int currentInt;
 
 
         try{
-            mCurrent.find();
+            mCurrent.find(); // have to do
+            cntLog++;
             //System.out.println(mCurrent.group(1)+ mCurrent.group(2));
             currentInt= Integer.valueOf(mCurrent.group(1)+ mCurrent.group(2));
             if(this.prev > currentInt){
-                logger.info("turnAround>> prev: "+ this.prev+ "\tcurrent: "+ currentInt);
+                logger.info("turnAround> prev: "+ this.prev+ "\tcurrent: "+ currentInt);
+                cntOverturnLog++;
             }
 
-            //todo prev change
             this.prev= currentInt;
         } catch (Exception e){
             logger.info("not found in "+ currentLine);
